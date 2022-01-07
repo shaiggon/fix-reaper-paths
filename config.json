@@ -10,5 +10,8 @@
         }
     ],
     "fixed_project_suffix": "-fixed",
-    "default_projects_root_dir": "/home/shaiggon/koodit/reaper-path-fix/test-files/"
+    "default_projects_root_dir": "/home/shaiggon/koodit/fix-reaper-paths/test-files/",
+    "vsts_to_fix": [
+        "shortcircuit (x86)"
+    ]
 }

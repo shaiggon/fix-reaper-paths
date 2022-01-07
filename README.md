@@ -50,3 +50,5 @@ encode the resulting bytes back to base64 format.
 
 This could be done for other VSTs as well as long as they use a comprehensible
 format for their settings.
+
+Figured the format out :)
