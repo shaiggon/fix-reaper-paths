@@ -16,7 +16,7 @@ overwrite your old projects you can set `"fixed_project_suffix": ""`.
 
 ## Usage
 
-To fix the reaper paths run the script
+To fix the file paths in your Reaper projects run the script
 
 ```
 $ ./fix-reaper-paths.py
@@ -28,7 +28,9 @@ or
 $ python3 fix-reaper-paths.py
 ```
 
-For the first "release" this is almost a naive search and replace which could easily be implemented with some shell magic.
+This will go through the directory set in configuration under `"default_projects_root_dir"` and find each .RPP file recursively
+under the root directory. For each project the file paths defined inside the project will be changed from `old` to `new`
+of each entry in the configurations `paths` attribute.
 
 ## Dependencies
 
@@ -40,15 +42,8 @@ This script was only created for my personal use when I decided to move all my o
 my new computer. Most likely you should not use the software as is, but feel free to use it as a starting point if
 you happen to have the same problem I'm having. Always make a backup of your project root before running.
 
-## TODO
+I have a bunch of projects where I use a VST sampler called [Shortcircuit](https://vemberaudio.se/shortcircuit/). The
+settings for each of the VSTs are encoded in base64. If you don't use such a sampler
+you can in the configuration file set `"vsts_to_fix = []"`.
 
-I have a bunch of projects where I use a VST sampler called "shortcircuit". The
-settings for each of the VST are encoded in base64. Luckily most of shortcircuits
-settings are in xml and not in some incomprehensible binary format. This
-allows me to read each setting, search and replace the paths I want and
-encode the resulting bytes back to base64 format.
-
-This could be done for other VSTs as well as long as they use a comprehensible
-format for their settings.
-
-Figured the format out :)
+The script is not 
