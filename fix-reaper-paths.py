@@ -17,7 +17,8 @@ def fix_shortcircuit_header(vst_settings_bytes):
     return vst_settings_before_xml_len + int.to_bytes(xml_length, length=4, byteorder="little") + vst_settings_after_xml_len
 
 def decode_fix_and_encode_base64(accumulated_base64_string, configuration, line_ending="\n"):
-    # Now there is still something in that base64 encoded binary that corrupts the shortcircuit file
+    # Decode the accumulated base64 string, fix the paths, fix the header and
+    # encode back into a base64 string ready to be embedded in the .RPP file
     b64_bytes = accumulated_base64_string.encode("utf-8")
     vst_settings_bytes = base64.b64decode(b64_bytes)
     for path_replacement in configuration["paths"]:
@@ -34,7 +35,7 @@ def fix_paths_for_rpp_project_vsts(project_string, configuration):
     project_lines = project_string.splitlines(True) # Preserve ends
     new_project_string = ""
     accumulated_base64_string = ""
-    accumulating = False # Accumulating the base64 encodedd vst setting
+    accumulating = False # Accumulating the base64 encoded vst setting
     for line in project_lines:
         if accumulating:
             if line.strip() == ">":
