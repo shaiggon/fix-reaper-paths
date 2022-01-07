@@ -1,0 +1,14 @@
+{
+    "paths": [
+        {
+            "old": "C:\\Users\\Lauri\\Documents\\REAPER Media",
+            "new": "E:\\OldWindows\\REAPER Media"
+        },
+        {
+            "old": "C:\\Musa",
+            "new": "E:\\OldWindows\\Musa"
+        }
+    ],
+    "fixed_project_suffix": "-fixed",
+    "default_projects_root_dir": "/home/shaiggon/koodit/reaper-path-fix/test-files/"
+}
