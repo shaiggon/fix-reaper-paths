@@ -9,15 +9,27 @@ import zlib
 def decode_fix_and_encode_base64_sforzando(accumulated_base64_string, configuration, line_ending="\n"):
     # Sforzando plugin settings are saved as zlib compressed files with some sort of header
     # After decompressing the result is an ARIA file which is xml. The paths there are saved in unix format
-    header_length = 68
+
     end_length = 6
-    compressed_length_position_in_header = 48 # Decompressed length in the header is 8 bytes larger than actually it is
-    decompressed_length_position_in_header = 64 # Decompressed length is exact
+    header_magic_number = b'\x01\x00\x00\x00\x00\x00\x10\x00CEGP'
 
     vst_settings_bytes = base64.b64decode(accumulated_base64_string.encode("utf-8"))
+    
+    header_magic_number_position = vst_settings_bytes.find(header_magic_number)
+
+    # Compressed length in the header is 8 bytes larger than actually it is
+    compressed_length_position_in_header = header_magic_number_position - 4
+
+    # Decompressed length is exact
+    decompressed_length_position_in_header = header_magic_number_position + 12
+    header_length = header_magic_number_position + 16 
 
     header = vst_settings_bytes[:header_length]
     end = vst_settings_bytes[-end_length:]
+
+    print(vst_settings_bytes)
+    print(header)
+    print(end)
 
     compressed_bytes = vst_settings_bytes[header_length:-end_length]
     decompressed_bytes = zlib.decompress(compressed_bytes)
@@ -138,8 +150,8 @@ def traverse_paths_and_fix_projects(configuration):
     for root, dirs, files in os.walk(root_directory):
         for file in files:
             if file.endswith(".RPP"):
-                #print(file)
                 full_project_path = os.path.join(root, file)
+                print("process project: " + full_project_path)
                 project_string = read_project_to_string(full_project_path)
                 fixed_project_string = fix_paths_for_rpp_project(project_string, configuration)
                 fixed_project_path = get_fixed_project_path(full_project_path, configuration)
