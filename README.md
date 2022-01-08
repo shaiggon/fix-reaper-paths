@@ -45,6 +45,14 @@ you happen to have the same problem I'm having. Always make a backup of your pro
 
 I have a bunch of projects where I use a VST sampler called [Shortcircuit](https://vemberaudio.se/shortcircuit/). The
 settings for each of the VSTs are encoded in base64. If you don't use such a sampler
-you can in the configuration file set `"vsts_to_fix = []"`.
+you can in the configuration file set `"vsts_to_fix = []"`. The script handles also changing paths for
+Shortcircuit.
+
+I've also used a plugin called [Sforzando](https://www.plogue.com/products/sforzando.html). The VST
+plays back soundfonts. However my soundfonts are in a different directory in my current computer so
+the paths need to be changed also for this plugin settings. Luckily I managed to figure out the file
+format for the plugin. After a header there is xml (specifically ARIA format data) compressed with
+zlib. This was found after a lucky guess. Now after some changes the script manages to change paths
+for Sforzando too!
 
 The script was not coded with releasing it in mind but maybe it will be helpful for someone out there.

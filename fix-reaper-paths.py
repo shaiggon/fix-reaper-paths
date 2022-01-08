@@ -19,18 +19,11 @@ def decode_fix_and_encode_base64_sforzando(accumulated_base64_string, configurat
     header = vst_settings_bytes[:header_length]
     end = vst_settings_bytes[-end_length:]
 
-    print(header)
-    print(end)
-
     compressed_bytes = vst_settings_bytes[header_length:-end_length]
     decompressed_bytes = zlib.decompress(compressed_bytes)
 
-    print(decompressed_bytes)
-
     for path_replacement in configuration["paths"]:
         decompressed_bytes = decompressed_bytes.replace(path_replacement["old"].encode(), path_replacement["new"].encode())
-
-    print(decompressed_bytes)
 
     new_compressed_bytes = zlib.compress(decompressed_bytes)
 
@@ -39,11 +32,7 @@ def decode_fix_and_encode_base64_sforzando(accumulated_base64_string, configurat
         header[compressed_length_position_in_header + 4:decompressed_length_position_in_header] + \
         int.to_bytes(len(decompressed_bytes), length=4, byteorder="little")
 
-    print(fixed_header)
-
     new_vst_settings_bytes = fixed_header + new_compressed_bytes + end
-
-    print(new_vst_settings_bytes)
 
     b64string = base64.b64encode(new_vst_settings_bytes).decode("utf-8")
     b64lines = "".join(["        " + line + line_ending for line in textwrap.wrap(b64string, 128)])
