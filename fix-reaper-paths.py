@@ -4,6 +4,50 @@ import json
 import os
 import base64
 import textwrap
+import zlib
+
+def decode_fix_and_encode_base64_sforzando(accumulated_base64_string, configuration, line_ending="\n"):
+    # Sforzando plugin settings are saved as zlib compressed files with some sort of header
+    # After decompressing the result is an ARIA file which is xml. The paths there are saved in unix format
+    header_length = 68
+    end_length = 6
+    compressed_length_position_in_header = 48 # Decompressed length in the header is 8 bytes larger than actually it is
+    decompressed_length_position_in_header = 64 # Decompressed length is exact
+
+    vst_settings_bytes = base64.b64decode(accumulated_base64_string.encode("utf-8"))
+
+    header = vst_settings_bytes[:header_length]
+    end = vst_settings_bytes[-end_length:]
+
+    print(header)
+    print(end)
+
+    compressed_bytes = vst_settings_bytes[header_length:-end_length]
+    decompressed_bytes = zlib.decompress(compressed_bytes)
+
+    print(decompressed_bytes)
+
+    for path_replacement in configuration["paths"]:
+        decompressed_bytes = decompressed_bytes.replace(path_replacement["old"].encode(), path_replacement["new"].encode())
+
+    print(decompressed_bytes)
+
+    new_compressed_bytes = zlib.compress(decompressed_bytes)
+
+    fixed_header = header[:compressed_length_position_in_header] + \
+        int.to_bytes(len(new_compressed_bytes) + 8, length=4, byteorder="little") + \
+        header[compressed_length_position_in_header + 4:decompressed_length_position_in_header] + \
+        int.to_bytes(len(decompressed_bytes), length=4, byteorder="little")
+
+    print(fixed_header)
+
+    new_vst_settings_bytes = fixed_header + new_compressed_bytes + end
+
+    print(new_vst_settings_bytes)
+
+    b64string = base64.b64encode(new_vst_settings_bytes).decode("utf-8")
+    b64lines = "".join(["        " + line + line_ending for line in textwrap.wrap(b64string, 128)])
+    return b64lines
 
 def fix_shortcircuit_header(vst_settings_bytes):
     # In shortcircuit header there is a value that denotes the length of the xml.
@@ -16,7 +60,7 @@ def fix_shortcircuit_header(vst_settings_bytes):
     vst_settings_after_xml_len = vst_settings_bytes[xml_length_position + 4:]
     return vst_settings_before_xml_len + int.to_bytes(xml_length, length=4, byteorder="little") + vst_settings_after_xml_len
 
-def decode_fix_and_encode_base64(accumulated_base64_string, configuration, line_ending="\n"):
+def decode_fix_and_encode_base64_shortcircuit(accumulated_base64_string, configuration, line_ending="\n"):
     # Decode the accumulated base64 string, fix the paths, fix the header and
     # encode back into a base64 string ready to be embedded in the .RPP file
     b64_bytes = accumulated_base64_string.encode("utf-8")
@@ -24,7 +68,6 @@ def decode_fix_and_encode_base64(accumulated_base64_string, configuration, line_
     for path_replacement in configuration["paths"]:
         vst_settings_bytes = vst_settings_bytes.replace(path_replacement["old"].encode(), path_replacement["new"].encode())
 
-    # TODO: Some kind of check if we actually want to do this
     vst_settings_bytes = fix_shortcircuit_header(vst_settings_bytes)
 
     b64string = base64.b64encode(vst_settings_bytes).decode("utf-8")
@@ -36,13 +79,18 @@ def fix_paths_for_rpp_project_vsts(project_string, configuration):
     new_project_string = ""
     accumulated_base64_string = ""
     accumulating = False # Accumulating the base64 encoded vst setting
+    current_vst_to_fix = ""
     for line in project_lines:
         if accumulating:
             if line.strip() == ">":
-                new_project_string += decode_fix_and_encode_base64(accumulated_base64_string, configuration)
+                if "shortcircuit" in current_vst_to_fix:
+                    new_project_string += decode_fix_and_encode_base64_shortcircuit(accumulated_base64_string, configuration)
+                elif "sforzando" in current_vst_to_fix:
+                    new_project_string += decode_fix_and_encode_base64_sforzando(accumulated_base64_string, configuration)
                 new_project_string += line
                 accumulating = False
                 accumulated_base64_string = ""
+                current_vst_to_fix = ""
             else:
                 accumulated_base64_string += line.strip()
             continue
@@ -50,6 +98,7 @@ def fix_paths_for_rpp_project_vsts(project_string, configuration):
             for vst_to_fix in configuration["vsts_to_fix"]:
                 if vst_to_fix in line:
                     accumulating = True
+                    current_vst_to_fix = vst_to_fix
                     break
         new_project_string += line
     return new_project_string

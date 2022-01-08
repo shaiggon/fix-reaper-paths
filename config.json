@@ -7,11 +7,16 @@
         {
             "old": "C:\\Musa",
             "new": "E:\\OldWindows\\Musa"
+        },
+        {
+            "old": "C:/Musa/soundfonts/",
+            "new": "E:/OldWindows/Musa/soundfonts/"
         }
     ],
     "fixed_project_suffix": "-fixed",
     "default_projects_root_dir": "/home/shaiggon/koodit/fix-reaper-paths/test-files/",
     "vsts_to_fix": [
-        "shortcircuit (x86)"
+        "shortcircuit (x86)",
+        "sforzando"
     ]
 }
