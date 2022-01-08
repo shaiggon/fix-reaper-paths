@@ -27,10 +27,6 @@ def decode_fix_and_encode_base64_sforzando(accumulated_base64_string, configurat
     header = vst_settings_bytes[:header_length]
     end = vst_settings_bytes[-end_length:]
 
-    print(vst_settings_bytes)
-    print(header)
-    print(end)
-
     compressed_bytes = vst_settings_bytes[header_length:-end_length]
     decompressed_bytes = zlib.decompress(compressed_bytes)
 
