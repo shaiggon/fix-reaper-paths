@@ -42,6 +42,7 @@ def fix_paths_for_rpp_project_vsts(project_string, configuration):
                 new_project_string += decode_fix_and_encode_base64(accumulated_base64_string, configuration)
                 new_project_string += line
                 accumulating = False
+                accumulated_base64_string = ""
             else:
                 accumulated_base64_string += line.strip()
             continue
